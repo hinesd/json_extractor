@@ -33,19 +33,6 @@ This Project will allow you to pass in any public facing endpoint and `FETCH and
 
 
 
-#### Extract JSON from file in Google Bucket. -- Usage is limited until database is setup
-
-```http
-  POST /state/extract_from_bucket
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `bucket`      | `string` | **Required**. name of bucket |
-| `name`      | `string` | **Required**. name of file |
-| `display_extracted` | `string/Bool` | **optional**. adds extracted content to the response |
-| `force_new` | `string/Bool` | **optional**. refetches an endpoint that's already been processed |
-
 ## Usage/Examples
 
 Fetch and Extract content from the endpoint supplied
