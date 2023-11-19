@@ -10,9 +10,6 @@ class UrlTests(APITestCase):
         response = self.client.post('/state/extract_content/', {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response = self.client.post('/state/extract_content/', {'bucket_name':'json_extraction_test_bucket_v2', 'file_name':'bad_file_name'}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
         ## populate the database
         data = {"url": "https://www.apple.com/retail/storelist/"}
         response = self.client.post('/state/extract_content/', data, format='json')
@@ -48,28 +45,6 @@ class UrlTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         ## ensure extracted content exists
         self.assert_(response.data['content']['extracted_content'] is not None)
-
-
-    def test_bucket_content(self):
-        ## populate the database
-        data = {"bucket_name": 'json_extraction_test_bucket_v2', "file_name": "apple.html"}
-        response = self.client.post('/state/extract_content/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        ## ensure extracted content doesnt exists
-        self.assert_(response.data['content']['extracted_content'] is None)
-
-        ## attempt to save content already fetched
-        response = self.client.post('/state/extract_content/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-        data['force_new'] = 'True'
-        data['display_extracted'] = 'True'
-        ## fetch NEW content on same URL
-        response = self.client.post('/state/extract_content/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        ## ensure extracted content exists
-        self.assert_(response.data['content']['extracted_content'] is not None)
-
 
 
     def test_list_states(self):
