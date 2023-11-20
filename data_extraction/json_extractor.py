@@ -2,6 +2,7 @@ import json
 
 
 def object_processor(next_index, is_escaped, source):
+    # Ensure valid object structure
     index = next_index
     json_str = ''
     source_len = len(source)
@@ -39,6 +40,9 @@ def object_processor(next_index, is_escaped, source):
 
 
 def validate_char(char, index, source):
+    ## todo keep track if we are key or value by tracking the :
+    # update logic to ensure that we are processing json control characters and values in the key:value pair
+    # otherwise we are breaking json structure.
     if char in [':', '[', ']', '\\', ','] or char.isnumeric() or char.isspace():
        return char
     if char in ['-','.'] and source[index+1].isnumeric():
@@ -52,7 +56,7 @@ def validate_char(char, index, source):
 
 
 def handle_in_str(index, is_escaped, source):
-
+    # Ensure valid string structure
     ret_str = ''
     in_str = False
     while index != len(source):
@@ -87,7 +91,6 @@ def handle_in_str(index, is_escaped, source):
                     in_str = not in_str
                 else:
                     return index + 1, ret_str + char
-        # inside string, default add
         ret_str += char
         index += 1
 
