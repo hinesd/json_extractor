@@ -6,6 +6,8 @@ def object_processor(next_index, is_escaped, source):
     index = next_index
     json_str = ''
     source_len = len(source)
+    is_key = True
+    in_list = 0
     while index != source_len:
         char = source[index]
         if char == '"': # process the inside of the string
@@ -30,7 +32,7 @@ def object_processor(next_index, is_escaped, source):
                 index += 1
                 continue
         # not in string and not control characters that needs validation, but still valid json character
-        valid_char = validate_char(char, index, source)
+        valid_char, is_key, in_list = validate_char(char, is_key, in_list, index, source)
         if valid_char:
             json_str += valid_char
             index += len(valid_char)
@@ -39,20 +41,44 @@ def object_processor(next_index, is_escaped, source):
             return index, False
 
 
-def validate_char(char, index, source):
-    ## todo keep track if we are key or value by tracking the :
-    # update logic to ensure that we are processing json control characters and values in the key:value pair
-    # otherwise we are breaking json structure.
-    if char in [':', '[', ']', '\\', ','] or char.isnumeric() or char.isspace():
-       return char
-    if char in ['-','.'] and source[index+1].isnumeric():
-       return char
-    if char in ['t', 'f', 'n']:
-       if source[index:index+4] in ['true', 'null']:
-           return source[index:index+4]
-       if source[index:index+5] == 'false':
-           return source[index:index+5]
-    return False
+def validate_char(char, is_key, in_list, index, source):
+
+    if char == '\\' or char.isspace():
+        return char, is_key, in_list
+
+    if is_key:
+        if char == ':':
+            prev_valid_char = index - 1
+            while source[prev_valid_char].isspace():
+                prev_valid_char -= 1
+            # valid char, flip is_key we are now
+            if source[prev_valid_char] == '"':
+                return char, False, in_list
+
+    if char == ',':
+        if in_list and not is_key:
+            return char, is_key, in_list
+        elif not in_list and not is_key:
+            return char, True, in_list
+
+    if not is_key:
+        # is value
+        if char == '[':
+            return char, is_key, in_list + 1
+        if char == ']':
+            if in_list > 0:
+                return char, is_key, in_list - 1
+            if not in_list:
+                return False, is_key, in_list
+        if char in ['-','.'] and source[index+1].isnumeric() or char.isnumeric():
+           return char, is_key, in_list
+        if char in ['t', 'f', 'n']:
+           if source[index:index+4] in ['true', 'null']:
+               return source[index:index+4], is_key, in_list
+           if source[index:index+5] == 'false':
+               return source[index:index+5], is_key, in_list
+
+    return False, is_key, in_list
 
 
 def handle_in_str(index, is_escaped, source):
