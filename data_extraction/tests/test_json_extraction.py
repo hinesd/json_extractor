@@ -9,4 +9,7 @@ def test_json_extraction(filename):
     with open(file_path, "r") as file:
         file_content = file.read()
         result = json_extractor(file_content)
-        assert len(result) > 0, f"Failed for file: {filename}"
+        assert isinstance(result['content'],list), f"Failed for file: {filename}"
+        assert len(result['content']) > 0, f"Failed for file: {filename}"
+
+test_json_extraction('valid_escaped.txt')
